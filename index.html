@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <style>
+    canvas { width: 100%; height: 390px; touch-action: none; }
+    .tab, .choice, .sign { transition: .15s; }
+    .tab.active { background: #0f172a; color: #fff; }
+    .choice.active { background: #1d4ed8; color: #fff; border-color: #1d4ed8; }
+    .sign.active.pos { background: #15803d; color: #fff; border-color: #15803d; }
+    .sign.active.neg { background: #dc2626; color: #fff; border-color: #dc2626; }
+    .step { display: none; }
+    .step.show { display: block; animation: fadeIn .25s ease-out; }
+    .graph { position: relative; }
+    .eqtag { position: absolute; right: 5%; bottom: 10%; padding: 5px 10px; background: #ffffffdf; border-radius: 8px; font-size: 18px; pointer-events: none; }
+    #work { padding: .22rem 0 .35rem; line-height: 1.8; }
+    #work .math-line { min-height: 2rem; padding-top: .15rem; }
+    #work .katex { line-height: 1.45; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    @media (max-width: 640px) { canvas { height: 310px; } }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-800">
+  <main class="max-w-5xl mx-auto p-4 sm:p-7">
+    <h1 class="text-3xl font-bold text-slate-900 mb-5">Solve Quadratic Inequalities Graphically</h1>
+    <nav class="flex flex-wrap gap-2 mb-5">
+      <button class="tab active px-4 py-2 rounded-lg font-semibold" onclick="page(1,this)">(a) Study the six general cases</button>
+      <button class="tab bg-white border px-4 py-2 rounded-lg font-semibold" onclick="page(2,this)">(b) Solve your own Quadratic Inequalities</button>
+    </nav>
+    <section id="p1">
+      <div class="bg-white rounded-2xl border shadow-sm p-5">
+        <h2 class="font-bold text-xl mb-4">Choose a case</h2>
+        <div class="grid grid-cols-[auto_repeat(3,minmax(105px,1fr))] gap-2 items-center text-center">
+          <div></div><b class="text-sm">2 x-intercepts</b><b class="text-sm">1 x-intercept</b><b class="text-sm">No x-intercepts</b>
+          <b class="text-sm text-right pr-2">Opens upwards</b>
+          <button class="choice active border rounded-lg p-2 text-sm font-semibold" onclick="setCase(1,2,this)">a &gt; 0 and Δ &gt; 0</button><button class="choice border rounded-lg p-2 text-sm font-semibold" onclick="setCase(1,1,this)">a &gt; 0 and Δ = 0</button><button class="choice border rounded-lg p-2 text-sm font-semibold" onclick="setCase(1,0,this)">a &gt; 0 and Δ &lt; 0</button>
+          <b class="text-sm text-right pr-2">Opens downwards</b>
+          <button class="choice border rounded-lg p-2 text-sm font-semibold" onclick="setCase(-1,2,this)">a &lt; 0 and Δ &gt; 0</button><button class="choice border rounded-lg p-2 text-sm font-semibold" onclick="setCase(-1,1,this)">a &lt; 0 and Δ = 0</button><button class="choice border rounded-lg p-2 text-sm font-semibold" onclick="setCase(-1,0,this)">a &lt; 0 and Δ &lt; 0</button>
+        </div>
+      </div>
+      <div class="bg-white mt-5 rounded-2xl border shadow-sm p-5">
+        <h2 id="caseTitle" class="font-bold text-xl"></h2>
+        <p class="text-slate-600 mt-1">Drag the point along the curve. Green region means <span id="posMath"></span>; red region means <span id="negMath"></span>.</p>
+        <div class="graph mt-3"><canvas id="g1"></canvas><div id="eq1" class="eqtag"></div></div>
+      </div>
+    </section>
+    <section id="p2" class="hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        <div class="bg-white rounded-2xl border shadow-sm p-5">
+          <h2 class="font-bold text-xl">Enter a Quadratic Equation</h2>
+          <div class="flex flex-wrap gap-3 items-end mt-4">
+            <label class="font-semibold">a<input id="a" type="number" value="1" class="block mt-1 w-24 border rounded-lg p-2"></label><label class="font-semibold">b<input id="b" type="number" value="-1" class="block mt-1 w-24 border rounded-lg p-2"></label><label class="font-semibold">c<input id="c" type="number" value="-2" class="block mt-1 w-24 border rounded-lg p-2"></label><button class="bg-blue-700 text-white font-bold rounded-lg px-5 py-2" onclick="start()">Start!</button>
+          </div>
+          <div id="eq" class="mt-5 text-xl"></div>
+        </div>
+        <div id="s1" class="step bg-white rounded-2xl border shadow-sm p-6">
+          <h3 class="font-bold text-lg">Step 1: Use the Quadratic Formula</h3>
+          <div id="work" class="mt-5 space-y-3 text-lg overflow-x-auto"></div>
+        </div>
+      </div>
+      <div class="mt-6 space-y-6">
+        <div id="s2" class="step bg-white rounded-2xl border shadow-sm p-6">
+          <h3 class="font-bold text-lg">Step 2: Sketch the graph and select an inequality</h3>
+          <div class="graph mt-4"><canvas id="g2"></canvas><div id="eq2" class="eqtag"></div></div>
+          <p class="font-semibold mt-5">Choose the inequality:</p>
+          <div class="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2"><button class="sign pos active border rounded-lg px-3 py-2 font-bold" data-s="gt" onclick="sign('gt')">y &gt; 0</button><button class="sign neg border rounded-lg px-3 py-2 font-bold" data-s="lt" onclick="sign('lt')">y &lt; 0</button><button class="sign pos border rounded-lg px-3 py-2 font-bold" data-s="ge" onclick="sign('ge')">y ≥ 0</button><button class="sign neg border rounded-lg px-3 py-2 font-bold" data-s="le" onclick="sign('le')">y ≤ 0</button></div>
+        </div>
+        <div id="nextWrap" class="hidden text-center"><button id="next" onclick="next()" class="bg-slate-900 text-white font-bold rounded-lg px-5 py-3">Next step →</button></div>
+        <div id="s3" class="step bg-white rounded-2xl border shadow-sm p-6"><h3 class="font-bold text-lg">Step 3: Find the required range of x</h3><div id="final" class="mt-4 text-xl font-bold text-blue-800"></div></div>
+      </div>
+    </section>
+  </main>
+  <script>
+    const $=id=>document.getElementById(id);let dir=1,nr=2,step=0,mode='gt',v={a:1,b:-1,c:-2};const drag={g1:0,g2:0},trails={g1:[],g2:[]};
+    function T(el,latex){window.katex?katex.render(latex,el,{throwOnError:false}):el.textContent=latex}function N(x){return Math.abs(x)<1e-9?0:+x.toFixed(8)}function D(q){return q.b*q.b-4*q.a*q.c}function expr(q){const A=q.a===1?'':q.a===-1?'-':N(q.a),B=q.b===0?'':q.b===1?'+x':q.b===-1?'-x':(q.b>0?'+':'')+N(q.b)+'x',C=q.c===0?'':(q.c>0?'+':'')+N(q.c);return'y='+A+'x^{2}'+B+C}function gcd(a,b){a=Math.abs(Math.round(a));b=Math.abs(Math.round(b));while(b){const t=a%b;a=b;b=t}return a||1}function F(a,b){if(b<0){a=-a;b=-b}const g=gcd(a,b);a/=g;b/=g;return b===1?''+a:'\\frac{'+a+'}{'+b+'}'}
+    function rd(q){const d=D(q),u=-q.b,z=2*q.a;if(d<0)return[];if(Math.abs(d)<1e-9)return[{n:u/z,t:F(u,z)}];const r=Math.sqrt(d),roots=[{n:(u-r)/z,t:''},{n:(u+r)/z,t:''}];roots.forEach((root,i)=>root.t=Math.abs(r-Math.round(r))<1e-9?F(u+(i?1:-1)*Math.round(r),z):'\\frac{'+N(u)+(i?'+':'-')+'\\sqrt{'+N(d)+'}}{'+N(z)+'}');return roots.sort((a,b)=>a.n-b.n)}
+    function ans(q,m){const r=rd(q),up=q.a>0,pos=m==='gt'||m==='ge',inc=m==='ge'||m==='le',l=inc?'\\le':'<',g=inc?'\\ge':'>';if(!r.length)return up===pos?'\\text{All real numbers}':'\\text{No solutions.}';if(r.length===1){if(up===pos)return inc?'\\text{All real numbers}':'x\\ne '+r[0].t;return inc?'x='+r[0].t:'\\text{No solutions.}'}return up===pos?'x '+l+' '+r[0].t+'\\quad\\text{or}\\quad x '+g+' '+r[1].t:r[0].t+' '+l+' x '+l+' '+r[1].t}
+    function demo(){return nr===2?{a:dir,b:0,c:-4*dir}:nr===1?{a:dir,b:0,c:0}:{a:dir,b:0,c:4*dir}}function page(n,b){$('p1').classList.toggle('hidden',n!==1);$('p2').classList.toggle('hidden',n!==2);document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');if(n===1)renderCase()}function setCase(d,r,b){dir=d;nr=r;trails.g1=[];drag.g1=0;document.querySelectorAll('.choice').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderCase()}function renderCase(){const n=(dir>0?0:3)+(nr===2?1:nr===1?2:3),q=demo();$('caseTitle').textContent='Case '+n+': Opens '+(dir>0?'upwards':'downwards')+' with '+(nr===0?'no':nr)+' x-intercept'+(nr===1?'':'s');T($('eq1'),expr(q));draw('g1',q)}
+    function draw(id,q){const c=$(id),b=c.getBoundingClientRect(),s=devicePixelRatio,W=b.width,H=b.height,X=5,Y=8;c.width=W*s;c.height=H*s;const z=c.getContext('2d');z.scale(s,s);const px=x=>W/2+x*W/(2*X),py=y=>H/2-y*H/(2*Y),f=x=>q.a*x*x+q.b*x+q.c;z.clearRect(0,0,W,H);z.strokeStyle='#d1d5db';z.lineWidth=1;for(let i=-5;i<=5;i++){z.beginPath();z.moveTo(px(i),0);z.lineTo(px(i),H);z.stroke()}for(let i=-8;i<=8;i+=2){z.beginPath();z.moveTo(0,py(i));z.lineTo(W,py(i));z.stroke()}trails[id].forEach(x=>{const y=f(x),top=Math.min(py(y),py(0));z.fillStyle=y>=0?'rgba(0,220,0,.75)':'rgba(245,25,20,.75)';z.fillRect(px(x)-1.1,top,2.2,Math.abs(py(y)-py(0)))});z.strokeStyle='#111827';z.lineWidth=1.25;z.beginPath();z.moveTo(3,py(0));z.lineTo(W-8,py(0));z.moveTo(px(0),H-3);z.lineTo(px(0),8);z.stroke();z.fillStyle='#111827';z.beginPath();z.moveTo(W-2,py(0));z.lineTo(W-10,py(0)-4);z.lineTo(W-10,py(0)+4);z.fill();z.beginPath();z.moveTo(px(0),2);z.lineTo(px(0)-4,10);z.lineTo(px(0)+4,10);z.fill();z.font='12px sans-serif';z.fillStyle='#374151';z.fillText('x',W-17,py(0)-8);z.fillText('y',px(0)+8,14);for(let i=-5;i<=5;i++)if(i)z.fillText(i,px(i)-4,py(0)+15);for(let i=-6;i<=6;i+=2)if(i)z.fillText(i,px(0)+6,py(i)+4);z.beginPath();for(let x=-X;x<=X;x+=.02)x===-X?z.moveTo(px(x),py(f(x))):z.lineTo(px(x),py(f(x)));z.strokeStyle='#111827';z.lineWidth=3;z.stroke();const x=Math.max(-X,Math.min(X,drag[id]||0)),y=f(x);z.fillStyle=y>=0?'#16a34a':'#dc2626';z.beginPath();z.arc(px(x),py(y),7,0,2*Math.PI);z.fill()}
+    function bind(c){const move=e=>{const r=c.getBoundingClientRect(),x=(e.clientX-r.left-r.width/2)*10/r.width;drag[c.id]=x;trails[c.id].push(x);draw(c.id,c.id==='g1'?demo():v)};c.addEventListener('pointerdown',e=>{c.setPointerCapture(e.pointerId);move(e)});c.addEventListener('pointermove',e=>{if(e.buttons)move(e)})}bind($('g1'));bind($('g2'));
+    function start(){v={a:+$('a').value,b:+$('b').value,c:+$('c').value};if(!v.a)return alert('Please enter a non-zero value for a.');step=0;trails.g2=[];drag.g2=0;document.querySelectorAll('.step').forEach(x=>x.classList.remove('show'));$('nextWrap').classList.remove('hidden');T($('eq'),expr(v));T($('eq2'),expr(v));next()}
+    function next(){if(step===3)return;step++;$('s'+step).classList.add('show');if(step===1){const d=D(v),r=rd(v),plugged='x=\\frac{-('+N(v.b)+')\\pm\\sqrt{('+N(v.b)+')^{2}-4('+N(v.a)+')('+N(v.c)+')}}{2('+N(v.a)+')}',simplified='x=\\frac{'+N(-v.b)+'\\pm\\sqrt{'+N(d)+'}}{'+N(2*v.a)+'}',rootLine=d<0?'\\text{There are two non-real roots.}':r.length===1?'x='+r[0].t:'x_{1}='+r[0].t+'\\,,\\qquad x_{2}='+r[1].t,description=d<0?'':r.length===1?'\\text{(one double real root)}':'\\text{(two distinct real roots)}';$('work').innerHTML='<div id="w1" class="math-line"></div><div id="w2" class="math-line"></div><div id="w3" class="math-line font-semibold whitespace-nowrap"></div><div id="w4" class="font-semibold"></div>';[['w1',plugged],['w2',simplified],['w3',rootLine],['w4',description]].forEach(([id,latex])=>T($(id),latex))}if(step===2){draw('g2',v);update()}if(step===3){update();$('nextWrap').classList.add('hidden')}}
+    function sign(s){mode=s;document.querySelectorAll('.sign').forEach(b=>b.className='sign border rounded-lg px-3 py-2 font-bold '+(b.dataset.s===s?'active '+((s==='gt'||s==='ge')?'pos':'neg'):''));update()}function update(){if(step>=2)T($('final'),'\\text{Required range: }'+ans(v,mode))}addEventListener('resize',()=>{draw('g1',demo());if(step>=2)draw('g2',v)});addEventListener('load',()=>{T($('posMath'),'y>0');T($('negMath'),'y<0');renderCase()});
+  </script>
+</body>
+</html>
